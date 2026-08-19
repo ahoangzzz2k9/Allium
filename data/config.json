@@ -1,0 +1,93 @@
+{
+  "project": {
+    "name": "Allium",
+    "document_id": "ALLIUM-SPEC-v2.0.4-CONSOLIDATED",
+    "spec_sha": "a3f8c92d1e4b7a6f5c0d9e2b1a3c4d5e6f7a8b9c0"
+  },
+  "runtime": {
+    "platform": "windows",
+    "python_min_version": "3.10",
+    "allow_online": false
+  },
+  "activation": {
+    "method": "ptt",
+    "ptt_hotkey": "ctrl+shift+space",
+    "wake_word": {
+      "enabled": false,
+      "engine": "NEEDS_CLARIFICATION",
+      "keyword": "Hey Allium"
+    }
+  },
+  "timeouts_seconds": {
+    "global": 60,
+    "listening": 10,
+    "stt": 30,
+    "llm": 30,
+    "planner": 5,
+    "executor_action": 30,
+    "tts": 15,
+    "permission": 1,
+    "router": 1,
+    "memory": 1
+  },
+  "retry": {
+    "backoff_seconds": [1, 2, 4],
+    "stt_max_retries": 3,
+    "llm_max_retries": 2,
+    "executor_max_retries": 2,
+    "tts_max_retries": 2
+  },
+  "models": {
+    "stt": {
+      "provider": "faster-whisper",
+      "model": "tiny",
+      "language": "NEEDS_CLARIFICATION"
+    },
+    "tts": {
+      "provider": "piper-tts",
+      "voice": "NEEDS_CLARIFICATION"
+    },
+    "llm": {
+      "provider": "ollama",
+      "cpu_default": "Phi-3-mini",
+      "gpu_optional": "Mistral 7B"
+    }
+  },
+  "router": {
+    "type": "static",
+    "rules": {
+      "reasoning": "Phi-3-mini",
+      "general": "Phi-3-mini"
+    }
+  },
+  "memory": {
+    "short_term_messages": 50,
+    "storage": "in-memory"
+  },
+  "permissions": {
+    "allowed_apps": ["notepad", "chrome"],
+    "allowed_directories": [],
+    "high_risk_requires_confirmation": true
+  },
+  "security": {
+    "session_timeout_minutes": 30,
+    "single_session": true,
+    "permission_authority": "PermissionManager"
+  },
+  "logging": {
+    "directory": "data/logs",
+    "retention_days": 30,
+    "raw_audio": false
+  },
+  "paths": {
+    "models": "models",
+    "data": "data",
+    "cache": "data/cache",
+    "logs": "data/logs"
+  },
+  "clarifications": [
+    "Gesture details are Phase 2 and remain unresolved.",
+    "Wake Word engine is unresolved; the specification lists Porcupine as the temporary default.",
+    "Dependency versions are TBD and must be verified before pinning."
+  ]
+}
