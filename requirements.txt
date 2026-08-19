@@ -1,0 +1,12 @@
+# Allium MVP dependencies — versions intentionally TBD per Dependency Governance.
+# Exact versions MUST be verified on Windows 10/11 with Python 3.10+ before pinning.
+
+faster-whisper  # TBD: verify compatible version
+piper-tts  # TBD: verify compatible version
+opencv-python  # TBD: verify compatible version
+pyautogui  # TBD: verify compatible version
+pynput  # TBD: verify compatible version
+loguru  # TBD: verify compatible version
+python-dotenv  # TBD: verify compatible version
+PyYAML  # TBD: verify compatible version
+pytest  # TBD: verify compatible version
