@@ -1,12 +1,14 @@
 """Swarm orchestration and consensus logic."""
 
 import time
-from typing import Any
+from typing import Any, Callable, TypeVar
 
 from .critic_agent import CriticAgent
 from .exceptions import AgentError, SwarmError
 from .orchestrator_agent import OrchestratorAgent
 from .synthesizer_agent import SynthesizerAgent
+
+AgentResult = TypeVar("AgentResult")
 
 
 class SwarmManager:
@@ -42,23 +44,55 @@ class SwarmManager:
             raise SwarmError("TIMEOUT")
         return max(1, int(remaining))
 
+    def _invoke(
+        self,
+        agent: Any,
+        operation: Callable[..., AgentResult],
+        deadline: float,
+        *args: Any,
+    ) -> AgentResult:
+        """Invoke an agent with no more timeout than the swarm deadline allows."""
+        remaining = self._remaining_timeout(deadline)
+        original_timeout = agent.timeout
+        agent.timeout = min(original_timeout, remaining)
+        try:
+            return operation(*args)
+        finally:
+            agent.timeout = original_timeout
+
     def process(self, query: str, context: dict[str, Any]) -> dict[str, Any]:
         """Run the swarm until consensus is reached or the retry budget expires."""
         deadline = time.monotonic() + self.timeout
 
         for attempt in range(self.max_retries + 1):
             try:
-                initial_plan = self.orchestrator.generate_plan(query, context)
-                if time.monotonic() >= deadline:
-                    raise SwarmError("TIMEOUT")
-
-                critique = self.critic.critique(initial_plan, context)
+                initial_plan = self._invoke(
+                    self.orchestrator,
+                    self.orchestrator.generate_plan,
+                    deadline,
+                    query,
+                    context,
+                )
+                critique = self._invoke(
+                    self.critic,
+                    self.critic.critique,
+                    deadline,
+                    initial_plan,
+                    context,
+                )
                 if critique["decision"] == "REJECT" or critique["confidence"] < 0.5:
                     if attempt == self.max_retries:
                         raise SwarmError("CONSENSUS_FAILED")
                     continue
 
-                synthesis = self.synthesizer.synthesize(initial_plan, critique, context)
+                synthesis = self._invoke(
+                    self.synthesizer,
+                    self.synthesizer.synthesize,
+                    deadline,
+                    initial_plan,
+                    critique,
+                    context,
+                )
                 if self._check_consensus([initial_plan], [critique], synthesis):
                     return synthesis
             except AgentError as exc:
@@ -80,16 +114,16 @@ class SwarmManager:
         synthesis: dict[str, Any],
     ) -> bool:
         """Return true when at least two of three agents approve confidently."""
-        del plans  # Kept in the signature to preserve the framework contract.
+        del plans
         decisions = [
+            "APPROVE",
             critiques[-1]["decision"],
             synthesis["decision"],
-            "APPROVE",
         ]
         confidences = [
+            1.0,
             float(critiques[-1]["confidence"]),
             float(synthesis["confidence"]),
-            1.0,
         ]
         approvals = sum(decision == "APPROVE" for decision in decisions)
         return approvals >= 2 and sum(confidences) / len(confidences) >= self.consensus_threshold
