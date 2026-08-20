@@ -3,8 +3,10 @@
 import json
 from typing import Mapping, Optional
 
+from .base import LLMProvider
 
-class MockLLMProvider:
+
+class MockLLMProvider(LLMProvider):
     """Return deterministic JSON responses without contacting a model."""
 
     def __init__(self, responses: Optional[Mapping[str, object]] = None) -> None:
