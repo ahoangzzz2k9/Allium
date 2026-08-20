@@ -25,6 +25,11 @@ class MockLLMProvider(LLMProvider):
         prompt_lower = prompt.lower()
         for keyword, response in self.responses.items():
             if keyword.lower() in prompt_lower:
+                if isinstance(response, list):
+                    if not response:
+                        raise RuntimeError(f"No mock responses remain for {keyword}")
+                    selected = response.pop(0)
+                    return selected if isinstance(selected, str) else json.dumps(selected)
                 return response if isinstance(response, str) else json.dumps(response)
         return json.dumps(
             {
