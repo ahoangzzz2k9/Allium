@@ -3,6 +3,7 @@
 from typing import Any
 
 from .base_agent import BaseAgent
+from .exceptions import AgentError
 
 
 class SynthesizerAgent(BaseAgent):
@@ -31,9 +32,9 @@ class SynthesizerAgent(BaseAgent):
         )
         required = {"plan", "confidence", "decision"}
         if not required.issubset(result):
-            raise ValueError("Synthesizer response is missing required fields")
+            raise AgentError("Synthesizer response is missing required fields")
         if result["decision"] not in {"APPROVE", "REJECT"}:
-            raise ValueError("Synthesizer decision must be APPROVE or REJECT")
+            raise AgentError("Synthesizer decision must be APPROVE or REJECT")
         if not isinstance(result["confidence"], (int, float)) or not 0 <= result["confidence"] <= 1:
-            raise ValueError("Synthesizer confidence must be between 0 and 1")
+            raise AgentError("Synthesizer confidence must be between 0 and 1")
         return result
