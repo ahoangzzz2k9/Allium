@@ -3,6 +3,7 @@
 from typing import Any
 
 from .base_agent import BaseAgent
+from .exceptions import AgentError
 
 
 class CriticAgent(BaseAgent):
@@ -22,9 +23,9 @@ class CriticAgent(BaseAgent):
         result = self.parse_output(self.call_llm(self._build_prompt(plan=plan, context=context)))
         required = {"decision", "confidence", "risks", "suggestions"}
         if not required.issubset(result):
-            raise ValueError("Critic response is missing required fields")
+            raise AgentError("Critic response is missing required fields")
         if result["decision"] not in {"APPROVE", "REJECT"}:
-            raise ValueError("Critic decision must be APPROVE or REJECT")
+            raise AgentError("Critic decision must be APPROVE or REJECT")
         if not isinstance(result["confidence"], (int, float)) or not 0 <= result["confidence"] <= 1:
-            raise ValueError("Critic confidence must be between 0 and 1")
+            raise AgentError("Critic confidence must be between 0 and 1")
         return result
