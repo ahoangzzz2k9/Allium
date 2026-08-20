@@ -3,6 +3,7 @@
 from typing import Any
 
 from .base_agent import BaseAgent
+from .exceptions import AgentError
 
 
 class OrchestratorAgent(BaseAgent):
@@ -24,9 +25,9 @@ class OrchestratorAgent(BaseAgent):
         result = self.parse_output(self.call_llm(self._build_prompt(query=query, context=context)))
         required = {"plan", "decision", "confidence", "rationale"}
         if not required.issubset(result):
-            raise ValueError("Orchestrator response is missing required fields")
+            raise AgentError("Orchestrator response is missing required fields")
         if result["decision"] != "APPROVE":
-            raise ValueError("Orchestrator decision must be APPROVE")
+            raise AgentError("Orchestrator decision must be APPROVE")
         if not isinstance(result["confidence"], (int, float)) or not 0 <= result["confidence"] <= 1:
-            raise ValueError("Orchestrator confidence must be between 0 and 1")
+            raise AgentError("Orchestrator confidence must be between 0 and 1")
         return result
